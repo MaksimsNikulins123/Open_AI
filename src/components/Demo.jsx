@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 
 import { copy, linkIcon, loader, tick } from '../assets';
 
-// import { useLazyGetSummaryQuery } from "../services/article";
-
-import axios from "axios";
+import { useLazyGetSummaryQuery } from "../services/article";
 
 const Demo = () => {
   
@@ -13,49 +11,28 @@ const Demo = () => {
     summary: '',
   });
 
-  // const [getSummary, { error, isFetching }] = useLazyGetSummaryQuery();
+  const [getSummary, { error, isFetching }] = useLazyGetSummaryQuery();
 
-
-const options = {
-  method: 'GET',
-  url: 'https://article-extractor-and-summarizer.p.rapidapi.com/summarize',
-  params: {
-    url: 'https://time.com/6266679/musk-ai-open-letter/',
-    length: '3'
-  },
-  headers: {
-    'X-RapidAPI-Key': 'd55f7b8f51msh82c96da76eb7b11p10ddd4jsned82d13faa97',
-    'X-RapidAPI-Host': 'article-extractor-and-summarizer.p.rapidapi.com'
-  }
-};
 
   const handleSubmit = async (e) => {
 
       e.preventDefault();
-      // alert('Submited')
-    try {
-      const response = await axios.request(options);
-      console.log(response.data);
-    } catch (error) {
-      console.error(error);
-    }
+ 
+    const { data } = await getSummary({ 
+      articleUrl: article.url,
 
+    });
 
-    // const { data } = await getSummary({ 
-    //   articleUrl: article.url,
+    if(data?.summary) {
+      const newArticle = {
+        ...article,
+        summary: data.summary
+      };
 
-    // });
-// debugger
-    // if(data?.summary) {
-    //   const newArticle = {
-    //     ...article,
-    //     summary: data.summary
-    //   };
-
-    //   setArticle(newArticle);
+      setArticle(newArticle);
       
-    //   console.log(newArticle);
-    // }
+      console.log(newArticle);
+    }
   }
 
   
