@@ -5,14 +5,14 @@ import { copy, linkIcon, loader, remove, tick } from '../assets';
 import { useLazyGetSummaryQuery } from "../services/article";
 
 const Demo = () => {
-
   const [article, setArticle] = useState({
     url: '',
     length: 3,
     summary: '',
   });
 
-  const [allArticles, setAllAricles] = useState([]);
+  const [allArticles, setAllArticles] = useState([]);
+  const [copied, setCopied] = useState("")
 
   const [getSummary, { error, isFetching }] = useLazyGetSummaryQuery();
 
@@ -20,7 +20,7 @@ const Demo = () => {
     const articlesFromLocalStorage = JSON.parse(localStorage.getItem('articles'))
 
     if (articlesFromLocalStorage) {
-      setAllAricles(articlesFromLocalStorage)
+      setAllArticles(articlesFromLocalStorage)
     }
   }, []);
 
@@ -39,21 +39,60 @@ const Demo = () => {
         ...article,
         summary: data.summary
       };
-
-      const updateAllArticles = [
-        newArticle,
-        ...allArticles
-      ];
-
+      
+      const hasSimilarElement = allArticles.some((item) => item.url === newArticle.url);
+      const updatedAllArticles = hasSimilarElement ? [...allArticles] : [newArticle, ...allArticles];
+      
+   
       setArticle(newArticle);
-      setAllAricles(updateAllArticles)
+      setAllArticles(updatedAllArticles)
 
-      localStorage.setItem('articles', JSON.stringify(updateAllArticles))
+      localStorage.setItem('articles', JSON.stringify(updatedAllArticles))
 
     }
   }
 
+  const handleCopy = (copyUrl) => {
+    setCopied(copyUrl);
+    navigator.clipboard.writeText(copyUrl);
+    setTimeout(() => setCopied(false), 3000);
+  }
+  const handleRemoveArticle = (index) => {
+    // console.log(article, index)
+    // const people = [
+    //   { id: 1, name: 'serdar' },
+    //   { id: 5, name: 'alex' },
+    //   { id: 300, name: 'brittany' }
+    // ];
+    
+    // const idToRemove = 5;
+    console.log(index)
+    console.log(allArticles);
+    // const array = [2, 5, 9];
 
+    // console.log(array);
+    
+    // const index = array.indexOf(5);
+ 
+      allArticles.splice(index, 1); // 2nd parameter means remove one item only
+    
+    
+    // array = [2, 9]
+    console.log(allArticles); 
+
+    // console.log(filteredAllArticles);
+
+//Output = [0, 1, 5, 12, 19, 20]
+    // const filteredAllArticle = allArticles.filter((item) => item[0] !== index);
+    // console.log(filteredAllArticle)
+    // setAllArticles(filteredAllArticle);
+    // localStorage.setItem('articles', JSON.stringify(filteredAllArticle))
+    
+    // [
+    //   { id: 1, name: 'serdar' },
+    //   { id: 300, name: 'brittany' }
+    // [
+  }
 
 
 
@@ -93,40 +132,82 @@ const Demo = () => {
 
         {/* Browse URL History */}
         <div className="flex flex-col gap-1 max-h-60 overflow-y-auto">
+          
           {allArticles.map((item, index) => (
-        <div className="flex justify-between items-center">
-              <div
+            <div
               key={`link-${index}`}
               onClick={() => setArticle(item)}
               className="link_card"
             >
-              <div className="copy_btn">
-                <img 
-                  src={copy}
+              <div 
+              className="copy_btn"
+              onClick={() => handleCopy(item.url)}
+              >
+                <img
+                  src={copied === item.url ? tick : copy}
                   alt="copy_icon"
                   className="w-[40%] h-[40%] object-contain"
                 />
               </div>
-              <p>
+              <p className="flex-1 font-satoshi text-blue-700 font-medium text-sm truncate">
                 {item.url}
               </p>
-              
-            </div>
-            <div className="remove_btn">
-                <img 
+              <div className="remove_btn">
+                <img
                   src={remove}
                   alt="remove_icon"
                   className="w-[80%] h-[80%] object-contain"
-                  onClick={() => {alert('Delete')}}
+                  onClick={() => handleRemoveArticle(index)}
                 />
               </div>
-        </div>
+            </div>
           ))}
         </div>
       </div>
 
       {/* Display Results */}
+      <div className="my-10 max-w-full flex justify-center items-center">
+        
+        {isFetching 
+        ? 
+        (
+          <img
+            src={loader}
+            alt="loader"
+            className="w-20 h-20 object-contain"
+          />
+        ) 
+        : 
+        error 
+        ? 
+        (
+          <p className="font-inter font-bold text-black text-center">
+            Well, that wasn't supposed to happen...
+            <br />
+            <span className="font-satoshi font-normal text-gray-700">
+              {error?.data?.error}
+            </span>
+          </p>
+        ) 
+        : 
+        (
+          article.summary 
+          && 
+          (
+            <div className="flex flex-col gap-3">
+              <h2 className="font-satoshi font-bold text-gray-600 text-xl">
+                Article <span className="blue_gradient">Summary</span>
+              </h2>
+              <div className="summary_box">
+                <p className="font-inter font-medium text-sm text-gray-700">
+                  {article.summary}
+                </p>
+              </div>
+            </div>
 
+          )
+        )}
+      </div>
     </section>
   )
 }
