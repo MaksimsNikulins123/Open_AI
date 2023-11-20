@@ -39,11 +39,11 @@ const Demo = () => {
         ...article,
         summary: data.summary
       };
-      
+
       const hasSimilarElement = allArticles.some((item) => item.url === newArticle.url);
       const updatedAllArticles = hasSimilarElement ? [...allArticles] : [newArticle, ...allArticles];
-      
-   
+
+
       setArticle(newArticle);
       setAllArticles(updatedAllArticles)
 
@@ -57,41 +57,21 @@ const Demo = () => {
     navigator.clipboard.writeText(copyUrl);
     setTimeout(() => setCopied(false), 3000);
   }
-  const handleRemoveArticle = (index) => {
-    // console.log(article, index)
-    // const people = [
-    //   { id: 1, name: 'serdar' },
-    //   { id: 5, name: 'alex' },
-    //   { id: 300, name: 'brittany' }
-    // ];
-    
-    // const idToRemove = 5;
-    console.log(index)
-    console.log(allArticles);
-    // const array = [2, 5, 9];
+  const handleRemoveArticle = (url) => {
 
-    // console.log(array);
-    
-    // const index = array.indexOf(5);
- 
-      allArticles.splice(index, 1); // 2nd parameter means remove one item only
-    
-    
-    // array = [2, 9]
-    console.log(allArticles); 
+    const localStorageArray = JSON.parse(localStorage.getItem('articles'))
 
-    // console.log(filteredAllArticles);
+    const newLocalStorageArray = localStorageArray.filter(function (item) {
+      if (item.url === url) {
+        return false;
+      } else {
+        return true;
+      }
+    })
 
-//Output = [0, 1, 5, 12, 19, 20]
-    // const filteredAllArticle = allArticles.filter((item) => item[0] !== index);
-    // console.log(filteredAllArticle)
-    // setAllArticles(filteredAllArticle);
-    // localStorage.setItem('articles', JSON.stringify(filteredAllArticle))
-    
-    // [
-    //   { id: 1, name: 'serdar' },
-    //   { id: 300, name: 'brittany' }
-    // [
+    setAllArticles(newLocalStorageArray)
+    localStorage.setItem('articles', JSON.stringify(newLocalStorageArray))
+
   }
 
 
@@ -132,16 +112,16 @@ const Demo = () => {
 
         {/* Browse URL History */}
         <div className="flex flex-col gap-1 max-h-60 overflow-y-auto">
-          
+
           {allArticles.map((item, index) => (
             <div
               key={`link-${index}`}
-              onClick={() => setArticle(item)}
+
               className="link_card"
             >
-              <div 
-              className="copy_btn"
-              onClick={() => handleCopy(item.url)}
+              <div
+                className="copy_btn"
+                onClick={() => handleCopy(item.url)}
               >
                 <img
                   src={copied === item.url ? tick : copy}
@@ -149,7 +129,10 @@ const Demo = () => {
                   className="w-[40%] h-[40%] object-contain"
                 />
               </div>
-              <p className="flex-1 font-satoshi text-blue-700 font-medium text-sm truncate">
+              <p
+                className="flex-1 font-satoshi text-blue-700 font-medium text-sm truncate"
+                onClick={() => setArticle(item)}
+              >
                 {item.url}
               </p>
               <div className="remove_btn">
@@ -157,7 +140,7 @@ const Demo = () => {
                   src={remove}
                   alt="remove_icon"
                   className="w-[80%] h-[80%] object-contain"
-                  onClick={() => handleRemoveArticle(index)}
+                  onClick={() => handleRemoveArticle(item.url)}
                 />
               </div>
             </div>
@@ -167,46 +150,46 @@ const Demo = () => {
 
       {/* Display Results */}
       <div className="my-10 max-w-full flex justify-center items-center">
-        
-        {isFetching 
-        ? 
-        (
-          <img
-            src={loader}
-            alt="loader"
-            className="w-20 h-20 object-contain"
-          />
-        ) 
-        : 
-        error 
-        ? 
-        (
-          <p className="font-inter font-bold text-black text-center">
-            Well, that wasn't supposed to happen...
-            <br />
-            <span className="font-satoshi font-normal text-gray-700">
-              {error?.data?.error}
-            </span>
-          </p>
-        ) 
-        : 
-        (
-          article.summary 
-          && 
-          (
-            <div className="flex flex-col gap-3">
-              <h2 className="font-satoshi font-bold text-gray-600 text-xl">
-                Article <span className="blue_gradient">Summary</span>
-              </h2>
-              <div className="summary_box">
-                <p className="font-inter font-medium text-sm text-gray-700">
-                  {article.summary}
-                </p>
-              </div>
-            </div>
 
+        {isFetching
+          ?
+          (
+            <img
+              src={loader}
+              alt="loader"
+              className="w-20 h-20 object-contain"
+            />
           )
-        )}
+          :
+          error
+            ?
+            (
+              <p className="font-inter font-bold text-black text-center">
+                Well, that wasn't supposed to happen...
+                <br />
+                <span className="font-satoshi font-normal text-gray-700">
+                  {error?.data?.error}
+                </span>
+              </p>
+            )
+            :
+            (
+              article.summary
+              &&
+              (
+                <div className="flex flex-col gap-3">
+                  <h2 className="font-satoshi font-bold text-gray-600 text-xl">
+                    Article <span className="blue_gradient">Summary</span>
+                  </h2>
+                  <div className="summary_box">
+                    <p className="font-inter font-medium text-sm text-gray-700">
+                      {article.summary}
+                    </p>
+                  </div>
+                </div>
+
+              )
+            )}
       </div>
     </section>
   )
